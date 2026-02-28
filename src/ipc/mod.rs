@@ -9,11 +9,11 @@ use crate::error::Result;
 
 pub fn socket_dir() -> PathBuf {
     let uid = nix::unistd::getuid();
-    PathBuf::from(format!("/tmp/kex-{uid}"))
+    PathBuf::from(format!("/tmp/kexsh-{uid}"))
 }
 
 pub fn socket_path() -> PathBuf {
-    socket_dir().join("kex.sock")
+    socket_dir().join("kexsh.sock")
 }
 
 pub fn ensure_socket_dir() -> Result<()> {
@@ -36,6 +36,6 @@ mod tests {
         let uid = nix::unistd::getuid();
         let path = socket_path();
         assert!(path.to_str().unwrap().contains(&uid.to_string()));
-        assert!(path.to_str().unwrap().ends_with("kex.sock"));
+        assert!(path.to_str().unwrap().ends_with("kexsh.sock"));
     }
 }

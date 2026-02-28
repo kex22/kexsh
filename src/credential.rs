@@ -1,4 +1,4 @@
-use crate::error::{KexError, Result};
+use crate::error::{KexshError, Result};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -15,32 +15,32 @@ pub fn credential_path() -> PathBuf {
             let home = std::env::var("HOME").unwrap_or_else(|_| "~".into());
             PathBuf::from(home).join(".config")
         })
-        .join("kex/terminal/credentials.json")
+        .join("kexsh/credentials.json")
 }
 
 pub fn load() -> Result<Credential> {
     let path = credential_path();
     let content = std::fs::read_to_string(&path)
-        .map_err(|_| KexError::Config("not logged in — run `kex login`".into()))?;
+        .map_err(|_| KexshError::Config("not logged in — run `kexsh login`".into()))?;
     serde_json::from_str(&content)
-        .map_err(|e| KexError::Config(format!("invalid credentials: {e}")))
+        .map_err(|e| KexshError::Config(format!("invalid credentials: {e}")))
 }
 
 pub fn save(cred: &Credential) -> Result<()> {
     let path = credential_path();
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)
-            .map_err(|e| KexError::Config(format!("cannot create config dir: {e}")))?;
+            .map_err(|e| KexshError::Config(format!("cannot create config dir: {e}")))?;
     }
     let json = serde_json::to_string_pretty(cred)
-        .map_err(|e| KexError::Config(format!("serialize error: {e}")))?;
+        .map_err(|e| KexshError::Config(format!("serialize error: {e}")))?;
     std::fs::write(&path, &json)
-        .map_err(|e| KexError::Config(format!("cannot write credentials: {e}")))?;
+        .map_err(|e| KexshError::Config(format!("cannot write credentials: {e}")))?;
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
         std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600))
-            .map_err(|e| KexError::Config(format!("cannot set permissions: {e}")))?;
+            .map_err(|e| KexshError::Config(format!("cannot set permissions: {e}")))?;
     }
     Ok(())
 }
@@ -49,7 +49,7 @@ pub fn remove() -> Result<()> {
     let path = credential_path();
     if path.exists() {
         std::fs::remove_file(&path)
-            .map_err(|e| KexError::Config(format!("cannot remove credentials: {e}")))?;
+            .map_err(|e| KexshError::Config(format!("cannot remove credentials: {e}")))?;
     }
     Ok(())
 }

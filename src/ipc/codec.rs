@@ -1,7 +1,7 @@
 use serde::{Serialize, de::DeserializeOwned};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
-use crate::error::{KexError, Result};
+use crate::error::{KexshError, Result};
 use crate::ipc::message::BinaryFrame;
 
 const MAX_MESSAGE_SIZE: usize = 16 * 1024 * 1024; // 16 MB
@@ -27,7 +27,7 @@ pub async fn read_message<T: DeserializeOwned>(stream: &mut (impl AsyncRead + Un
     stream.read_exact(&mut len_buf).await?;
     let len = u32::from_be_bytes(len_buf) as usize;
     if len > MAX_MESSAGE_SIZE {
-        return Err(KexError::Ipc(format!("message too large: {len} bytes")));
+        return Err(KexshError::Ipc(format!("message too large: {len} bytes")));
     }
     let mut buf = vec![0u8; len];
     stream.read_exact(&mut buf).await?;
@@ -90,10 +90,14 @@ pub async fn read_binary_frame(
     let total_len = u32::from_be_bytes(len_buf) as usize;
 
     if total_len < 9 {
-        return Err(KexError::Ipc(format!("frame too short: {total_len} bytes")));
+        return Err(KexshError::Ipc(format!(
+            "frame too short: {total_len} bytes"
+        )));
     }
     if total_len > MAX_MESSAGE_SIZE {
-        return Err(KexError::Ipc(format!("frame too large: {total_len} bytes")));
+        return Err(KexshError::Ipc(format!(
+            "frame too large: {total_len} bytes"
+        )));
     }
 
     let mut buf = vec![0u8; total_len];
@@ -110,7 +114,7 @@ pub async fn read_binary_frame(
         FRAME_TYPE_DATA => BinaryFrame::Data(payload.to_vec()),
         FRAME_TYPE_RESIZE => {
             if payload.len() != 4 {
-                return Err(KexError::Ipc(format!(
+                return Err(KexshError::Ipc(format!(
                     "resize frame expects 4 bytes, got {}",
                     payload.len()
                 )));
@@ -122,7 +126,11 @@ pub async fn read_binary_frame(
         }
         FRAME_TYPE_DETACH => BinaryFrame::Detach,
         FRAME_TYPE_CONTROL => BinaryFrame::Control(payload.to_vec()),
-        _ => return Err(KexError::Ipc(format!("unknown frame type: {type_byte:#x}"))),
+        _ => {
+            return Err(KexshError::Ipc(format!(
+                "unknown frame type: {type_byte:#x}"
+            )));
+        }
     };
 
     Ok((tid, frame))
@@ -142,7 +150,7 @@ pub async fn read_control_frame<T: DeserializeOwned>(
     let (_, frame) = read_binary_frame(stream).await?;
     match frame {
         BinaryFrame::Control(payload) => Ok(serde_json::from_slice(&payload)?),
-        other => Err(KexError::Ipc(format!(
+        other => Err(KexshError::Ipc(format!(
             "expected Control frame, got {other:?}"
         ))),
     }

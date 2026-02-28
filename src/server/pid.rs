@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
-use crate::error::{KexError, Result};
+use crate::error::{KexshError, Result};
 use crate::ipc;
 
 pub fn pid_path() -> PathBuf {
-    ipc::socket_dir().join("kex.pid")
+    ipc::socket_dir().join("kexsh.pid")
 }
 
 pub fn write_pid() -> Result<()> {
@@ -23,7 +23,7 @@ pub fn read_pid() -> Result<Option<u32>> {
         .trim()
         .parse::<u32>()
         .map(Some)
-        .map_err(|e| KexError::Server(format!("invalid pid file: {e}")))
+        .map_err(|e| KexshError::Server(format!("invalid pid file: {e}")))
 }
 
 pub fn is_server_running() -> bool {

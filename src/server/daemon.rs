@@ -1,14 +1,14 @@
-use crate::error::{KexError, Result};
+use crate::error::{KexshError, Result};
 
 pub fn daemonize() -> Result<()> {
     use nix::unistd::{ForkResult, fork, setsid};
 
-    match unsafe { fork() }.map_err(|e| KexError::Server(format!("fork failed: {e}")))? {
+    match unsafe { fork() }.map_err(|e| KexshError::Server(format!("fork failed: {e}")))? {
         ForkResult::Parent { .. } => std::process::exit(0),
         ForkResult::Child => {}
     }
 
-    setsid().map_err(|e| KexError::Server(format!("setsid failed: {e}")))?;
+    setsid().map_err(|e| KexshError::Server(format!("setsid failed: {e}")))?;
 
     // Redirect stdio to /dev/null using libc
     unsafe {

@@ -1,8 +1,8 @@
 use crate::credential::{self, Credential};
-use crate::error::{KexError, Result};
+use crate::error::{KexshError, Result};
 use serde::Deserialize;
 
-const CLIENT_ID: &str = "kex-cli";
+const CLIENT_ID: &str = "kexsh-cli";
 
 #[derive(Deserialize)]
 struct DeviceCodeResponse {
@@ -31,10 +31,10 @@ pub async fn login(server_url: &str) -> Result<()> {
         .json(&serde_json::json!({ "client_id": CLIENT_ID }))
         .send()
         .await
-        .map_err(|e| KexError::Server(format!("request failed: {e}")))?
+        .map_err(|e| KexshError::Server(format!("request failed: {e}")))?
         .json()
         .await
-        .map_err(|e| KexError::Server(format!("invalid response: {e}")))?;
+        .map_err(|e| KexshError::Server(format!("invalid response: {e}")))?;
 
     // Show user code and open browser
     println!("Open in browser: {}", res.verification_uri);
@@ -54,24 +54,24 @@ pub async fn login(server_url: &str) -> Result<()> {
             }))
             .send()
             .await
-            .map_err(|e| KexError::Server(format!("poll failed: {e}")))?;
+            .map_err(|e| KexshError::Server(format!("poll failed: {e}")))?;
 
         if poll.status().is_success() {
             let t: TokenResponse = poll
                 .json()
                 .await
-                .map_err(|e| KexError::Server(format!("invalid token response: {e}")))?;
+                .map_err(|e| KexshError::Server(format!("invalid token response: {e}")))?;
             break t.access_token;
         }
         let err: ErrorResponse = poll.json().await.unwrap_or(ErrorResponse { error: None });
         match err.error.as_deref() {
             Some("expired_token") => {
-                return Err(KexError::Server(
-                    "device code expired — run `kex login` again".into(),
+                return Err(KexshError::Server(
+                    "device code expired — run `kexsh login` again".into(),
                 ));
             }
             Some("access_denied") => {
-                return Err(KexError::Server("authorization denied".into()));
+                return Err(KexshError::Server("authorization denied".into()));
             }
             Some("slow_down") => interval += std::time::Duration::from_secs(5),
             _ => {} // authorization_pending — keep polling

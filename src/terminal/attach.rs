@@ -518,12 +518,14 @@ async fn fetch_view_by_index(n: usize) -> Result<ViewInfo> {
     match client.send(Request::ViewList).await? {
         Response::ViewList { views } => {
             if n == 0 || n > views.len() {
-                return Err(crate::error::KexError::Server(format!(
+                return Err(crate::error::KexshError::Server(format!(
                     "view index {n} out of range"
                 )));
             }
             Ok(views.into_iter().nth(n - 1).unwrap())
         }
-        _ => Err(crate::error::KexError::Server("unexpected response".into())),
+        _ => Err(crate::error::KexshError::Server(
+            "unexpected response".into(),
+        )),
     }
 }

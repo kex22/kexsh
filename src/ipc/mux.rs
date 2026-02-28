@@ -4,7 +4,7 @@ use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::net::UnixStream;
 use tokio::sync::{Mutex, oneshot};
 
-use crate::error::{KexError, Result};
+use crate::error::{KexshError, Result};
 use crate::ipc::codec::{
     read_binary_frame, write_binary_frame, write_control_frame, write_message,
 };
@@ -56,8 +56,8 @@ impl<W: AsyncWrite + Unpin + Send> LocalMuxSender<W> {
         write_control_frame(&mut self.writer, req).await?;
         tokio::time::timeout(std::time::Duration::from_secs(5), rx)
             .await
-            .map_err(|_| KexError::Ipc("control response timed out".into()))?
-            .map_err(|_| KexError::Ipc("control response channel closed".into()))
+            .map_err(|_| KexshError::Ipc("control response timed out".into()))?
+            .map_err(|_| KexshError::Ipc("control response channel closed".into()))
     }
 }
 
@@ -87,7 +87,7 @@ pub async fn local_mux_connect(
     let path = socket_path();
     let mut stream = UnixStream::connect(&path)
         .await
-        .map_err(|e| KexError::Ipc(format!("connect to {}: {e}", path.display())))?;
+        .map_err(|e| KexshError::Ipc(format!("connect to {}: {e}", path.display())))?;
 
     // JSON handshake
     write_message(
@@ -101,8 +101,8 @@ pub async fn local_mux_connect(
     let resp: Response = crate::ipc::codec::read_message(&mut stream).await?;
     match resp {
         Response::MultiplexAttached { .. } => {}
-        Response::Error { message } => return Err(KexError::Ipc(message)),
-        _ => return Err(KexError::Ipc("unexpected handshake response".into())),
+        Response::Error { message } => return Err(KexshError::Ipc(message)),
+        _ => return Err(KexshError::Ipc("unexpected handshake response".into())),
     }
 
     let (reader, writer) = stream.into_split();

@@ -1,10 +1,10 @@
-# kex-terminal
+# kexsh
 
 > A modern terminal multiplexer, reimagined.
 
 ## 项目概述
 
-kex-terminal 是一个现代化的终端多路复用器（类 tmux），采用 Rust 构建。它是 kex 产品的开源 CLI 部分，配套闭源 SaaS 平台 `kex-terminal-cloud` 提供 Web 远程终端体验。
+kexsh 是一个现代化的终端多路复用器（类 tmux），采用 Rust 构建。它是 kex 品牌的开源 CLI 部分，配套闭源 SaaS 平台 `kexsh-cloud` 提供 Web 远程终端体验。
 
 ## 核心设计理念
 
@@ -15,11 +15,11 @@ kex-terminal 是一个现代化的终端多路复用器（类 tmux），采用 R
 - **临时 view**：创建终端时自动分配默认视图并进入，无需手动管理
 
 ### 命令设计
-- Docker 风格：`kex <资源> <动作> [参数]`
-- 示例：`kex terminal create`, `kex view ls`
+- Docker 风格：`kexsh <资源> <动作> [参数]`
+- 示例：`kexsh terminal create`, `kexsh view ls`
 
 ### 快捷键
-- 轻量模式系统：只有 Normal（输入传递终端）和 Command（kex 接管）两个模式
+- 轻量模式系统：只有 Normal（输入传递终端）和 Command（kexsh 接管）两个模式
 - SSH 友好：不依赖复杂组合键，Command 模式下全部单键操作
 - 语义化键位：`s` split, `k` kill, `h/j/k/l` 方向
 
@@ -46,7 +46,7 @@ kex-terminal 是一个现代化的终端多路复用器（类 tmux），采用 R
 
 ### 单元测试要求
 - 所有主要模块必须有单元测试
-- 协议层使用共享 fixtures（`protocol/fixtures/`）确保与 kex-terminal-cloud 的一致性
+- 协议层使用共享 fixtures（`protocol/fixtures/`）确保与 kexsh-cloud 的一致性
 - 使用 `cargo test` 运行测试
 
 ### 协议管理
@@ -57,7 +57,7 @@ kex-terminal 是一个现代化的终端多路复用器（类 tmux），采用 R
 ## 项目结构
 
 ```
-kex-terminal/
+kexsh/
 ├── src/
 │   ├── cloud/            ← Cloud 命令（login/logout, Device Auth Grant）
 │   ├── config.rs          ← 配置文件加载（TOML、prefix key、UI 偏好）
@@ -80,9 +80,9 @@ kex-terminal/
 
 ## 关联项目
 
-- **kex-terminal-cloud**（闭源）：SaaS 平台，包含 Cloudflare Workers 后端 + React Web 前端
+- **kexsh-cloud**（闭源）：SaaS 平台，包含 Cloudflare Workers 后端 + React Web 前端
 - 两个项目通过 `protocol/` 中的 JSON Schema 协作，面向协议编程
-- 设计文档和调研文档统一维护在 kex-terminal-cloud 的 `docs/` 目录中（不同步到本仓库）
+- 设计文档和调研文档统一维护在 kexsh-cloud 的 `docs/` 目录中（不同步到本仓库）
 
 ## CLAUDE.md 维护规则
 

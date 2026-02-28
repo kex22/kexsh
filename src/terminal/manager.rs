@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::error::{KexError, Result};
+use crate::error::{KexshError, Result};
 use crate::ipc::message::TerminalInfo;
 use crate::terminal::pty::Pty;
 
@@ -47,7 +47,7 @@ impl TerminalManager {
     pub fn kill(&mut self, id_or_name: &str) -> Result<()> {
         let id = self
             .resolve_id(id_or_name)
-            .ok_or_else(|| KexError::Server(format!("terminal not found: {id_or_name}")))?;
+            .ok_or_else(|| KexshError::Server(format!("terminal not found: {id_or_name}")))?;
         if let Some(mut t) = self.terminals.remove(&id) {
             let _ = t.pty.kill();
         }

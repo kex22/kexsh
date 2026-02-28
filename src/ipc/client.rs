@@ -13,7 +13,7 @@ impl IpcClient {
     pub async fn connect() -> Result<Self> {
         let path = socket_path();
         let stream = UnixStream::connect(&path).await.map_err(|e| {
-            crate::error::KexError::Ipc(format!("failed to connect to {}: {e}", path.display()))
+            crate::error::KexshError::Ipc(format!("failed to connect to {}: {e}", path.display()))
         })?;
         Ok(Self { stream })
     }

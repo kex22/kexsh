@@ -2,7 +2,7 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use serde::Deserialize;
 use std::path::PathBuf;
 
-use crate::error::{KexError, Result};
+use crate::error::{KexshError, Result};
 
 #[derive(Debug, Clone)]
 pub struct PrefixKey {
@@ -103,24 +103,24 @@ fn parse_prefix(s: &str) -> Result<PrefixKey> {
             .chars()
             .next()
             .filter(|c| c.is_ascii_lowercase() && ch.len() == 1)
-            .ok_or_else(|| KexError::Config(format!("invalid prefix key: {s}")))?;
+            .ok_or_else(|| KexshError::Config(format!("invalid prefix key: {s}")))?;
         return Ok(PrefixKey {
             code: KeyCode::Char(c),
             modifiers: KeyModifiers::CONTROL,
         });
     }
-    Err(KexError::Config(format!(
+    Err(KexshError::Config(format!(
         "unsupported prefix format: {s} (expected ctrl-<char>)"
     )))
 }
 
 pub fn config_path() -> PathBuf {
-    dirs_config_path().unwrap_or_else(|| PathBuf::from("~/.config/kex/config.toml"))
+    dirs_config_path().unwrap_or_else(|| PathBuf::from("~/.config/kexsh/config.toml"))
 }
 
 fn dirs_config_path() -> Option<PathBuf> {
     let home = std::env::var("HOME").ok()?;
-    Some(PathBuf::from(home).join(".config/kex/config.toml"))
+    Some(PathBuf::from(home).join(".config/kexsh/config.toml"))
 }
 
 impl Config {
@@ -130,13 +130,13 @@ impl Config {
             return Ok(Self::default());
         }
         let content = std::fs::read_to_string(&path)
-            .map_err(|e| KexError::Config(format!("failed to read {}: {e}", path.display())))?;
+            .map_err(|e| KexshError::Config(format!("failed to read {}: {e}", path.display())))?;
         Self::from_toml(&content)
     }
 
     pub fn from_toml(content: &str) -> Result<Self> {
         let raw: RawConfig =
-            toml::from_str(content).map_err(|e| KexError::Config(format!("parse error: {e}")))?;
+            toml::from_str(content).map_err(|e| KexshError::Config(format!("parse error: {e}")))?;
         let prefix = parse_prefix(&raw.keys.prefix)?;
         Ok(Self {
             prefix,

@@ -10,7 +10,7 @@ use tokio::sync::{Mutex, Notify};
 use tokio::task::JoinHandle;
 
 use crate::cloud::manager::{CloudCommand, CloudManager};
-use crate::error::{KexError, Result};
+use crate::error::{KexshError, Result};
 use crate::ipc;
 use crate::ipc::codec::{read_binary_frame, read_message, write_binary_frame, write_message};
 use crate::ipc::message::{BinaryFrame, MuxRequest, MuxResponse, Request, Response, ViewInfo};
@@ -31,7 +31,7 @@ pub struct Server {
 impl Server {
     pub async fn start() -> Result<()> {
         if pid::is_server_running() {
-            return Err(KexError::Server("server is already running".into()));
+            return Err(KexshError::Server("server is already running".into()));
         }
 
         ipc::ensure_socket_dir()?;

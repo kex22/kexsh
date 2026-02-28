@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum KexError {
+pub enum KexshError {
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
     #[error("JSON error: {0}")]
@@ -14,4 +14,4 @@ pub enum KexError {
     Config(String),
 }
 
-pub type Result<T> = std::result::Result<T, KexError>;
+pub type Result<T> = std::result::Result<T, KexshError>;

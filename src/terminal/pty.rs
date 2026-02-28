@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 
 use portable_pty::{CommandBuilder, MasterPty, PtySize, native_pty_system};
 
-use crate::error::{KexError, Result};
+use crate::error::{KexshError, Result};
 
 pub struct Pty {
     master: Arc<Mutex<Box<dyn MasterPty + Send>>>,
@@ -21,7 +21,7 @@ impl PtyResizer {
         let master = self
             .master
             .lock()
-            .map_err(|_| KexError::Server("pty mutex poisoned".into()))?;
+            .map_err(|_| KexshError::Server("pty mutex poisoned".into()))?;
         master
             .resize(PtySize {
                 rows,
@@ -29,7 +29,7 @@ impl PtyResizer {
                 pixel_width: 0,
                 pixel_height: 0,
             })
-            .map_err(|e| KexError::Server(format!("resize: {e}")))
+            .map_err(|e| KexshError::Server(format!("resize: {e}")))
     }
 }
 
@@ -43,19 +43,19 @@ impl Pty {
                 pixel_width: 0,
                 pixel_height: 0,
             })
-            .map_err(|e| KexError::Server(format!("openpty: {e}")))?;
+            .map_err(|e| KexshError::Server(format!("openpty: {e}")))?;
 
         let shell = std::env::var("SHELL").unwrap_or_else(|_| "/bin/sh".into());
         let cmd = CommandBuilder::new(shell);
         let child = pair
             .slave
             .spawn_command(cmd)
-            .map_err(|e| KexError::Server(format!("spawn: {e}")))?;
+            .map_err(|e| KexshError::Server(format!("spawn: {e}")))?;
 
         let writer = pair
             .master
             .take_writer()
-            .map_err(|e| KexError::Server(format!("take writer: {e}")))?;
+            .map_err(|e| KexshError::Server(format!("take writer: {e}")))?;
 
         Ok(Pty {
             master: Arc::new(Mutex::new(pair.master)),
@@ -68,10 +68,10 @@ impl Pty {
         let master = self
             .master
             .lock()
-            .map_err(|_| KexError::Server("pty mutex poisoned".into()))?;
+            .map_err(|_| KexshError::Server("pty mutex poisoned".into()))?;
         master
             .try_clone_reader()
-            .map_err(|e| KexError::Server(format!("clone reader: {e}")))
+            .map_err(|e| KexshError::Server(format!("clone reader: {e}")))
     }
 
     pub fn clone_writer(&self) -> Arc<Mutex<Box<dyn Write + Send>>> {
@@ -91,6 +91,6 @@ impl Pty {
     pub fn kill(&mut self) -> Result<()> {
         self.child
             .kill()
-            .map_err(|e| KexError::Server(format!("kill: {e}")))
+            .map_err(|e| KexshError::Server(format!("kill: {e}")))
     }
 }

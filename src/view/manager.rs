@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-use crate::error::{KexError, Result};
+use crate::error::{KexshError, Result};
 use crate::ipc::message::ViewInfo;
 
 pub struct View {
@@ -51,7 +51,7 @@ impl ViewManager {
     pub fn delete(&mut self, id_or_name: &str) -> Result<()> {
         let id = self
             .resolve_id(id_or_name)
-            .ok_or_else(|| KexError::Server(format!("view not found: {id_or_name}")))?;
+            .ok_or_else(|| KexshError::Server(format!("view not found: {id_or_name}")))?;
         self.views.remove(&id);
         Ok(())
     }

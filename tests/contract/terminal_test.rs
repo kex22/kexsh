@@ -2,7 +2,7 @@ use base64::Engine;
 
 use crate::contract;
 use crate::support::load_scenario;
-use kex::cloud::manager::{encode_binary_frame, envelope};
+use kexsh::cloud::manager::{encode_binary_frame, envelope};
 
 #[test]
 fn contract_terminal_sync_message_format() {

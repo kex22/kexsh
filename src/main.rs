@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "kex", about = "A modern terminal multiplexer")]
+#[command(name = "kexsh", about = "A modern terminal multiplexer")]
 struct Cli {
     #[command(subcommand)]
     command: Command,
@@ -9,7 +9,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Manage the kex server
+    /// Manage the kexsh server
     Server {
         #[command(subcommand)]
         action: ServerAction,
@@ -29,13 +29,13 @@ enum Command {
         #[command(subcommand)]
         action: ConfigAction,
     },
-    /// Login to kex cloud
+    /// Login to kexsh cloud
     Login {
         /// Server URL
         #[arg(long, default_value = "https://app.kex.sh")]
         server: String,
     },
-    /// Logout from kex cloud
+    /// Logout from kexsh cloud
     Logout,
     /// Manage URL proxies for local ports
     Proxy {
@@ -159,7 +159,7 @@ fn main() {
         Command::Server {
             action: ServerAction::Start
         }
-    ) && let Err(e) = kex::server::daemon::daemonize()
+    ) && let Err(e) = kexsh::server::daemon::daemonize()
     {
         eprintln!("Error: {e}");
         std::process::exit(1);
@@ -172,14 +172,14 @@ fn main() {
     }
 }
 
-async fn run(cli: Cli) -> kex::error::Result<()> {
-    use kex::error::KexError;
-    use kex::ipc::client::IpcClient;
-    use kex::ipc::message::{Request, Response};
+async fn run(cli: Cli) -> kexsh::error::Result<()> {
+    use kexsh::error::KexshError;
+    use kexsh::ipc::client::IpcClient;
+    use kexsh::ipc::message::{Request, Response};
 
     match cli.command {
         Command::Server { action } => match action {
-            ServerAction::Start => kex::server::Server::start().await,
+            ServerAction::Start => kexsh::server::Server::start().await,
             ServerAction::Stop => {
                 let mut client = IpcClient::connect().await?;
                 match client.send(Request::ServerStop).await? {
@@ -187,7 +187,7 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                         println!("server stopped");
                         Ok(())
                     }
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }
@@ -203,10 +203,10 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                             Ok(())
                         } else {
                             let label = label.unwrap_or_else(|| id.clone());
-                            kex::terminal::attach::attach(&label).await
+                            kexsh::terminal::attach::attach(&label).await
                         }
                     }
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }
@@ -235,11 +235,11 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                 let mut client = IpcClient::connect().await?;
                 match client.send(Request::TerminalKill { id }).await? {
                     Response::Ok => Ok(()),
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }
-            TerminalAction::Attach { id } => kex::terminal::attach::attach(&id).await,
+            TerminalAction::Attach { id } => kexsh::terminal::attach::attach(&id).await,
             TerminalAction::Sync { id } => {
                 let mut client = IpcClient::connect().await?;
                 match client.send(Request::TerminalSync { id }).await? {
@@ -247,7 +247,7 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                         println!("terminal synced");
                         Ok(())
                     }
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }
@@ -258,7 +258,7 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                         println!("terminal unsynced");
                         Ok(())
                     }
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }
@@ -277,7 +277,7 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                         println!("{id}");
                         Ok(())
                     }
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }
@@ -304,7 +304,7 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                 let mut client = IpcClient::connect().await?;
                 match client.send(Request::ViewDelete { id }).await? {
                     Response::Ok => Ok(()),
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }
@@ -318,7 +318,7 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                         println!("Created:   {}", view.created_at);
                         Ok(())
                     }
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }
@@ -331,10 +331,10 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                         focused,
                     } => {
                         if terminal_ids.is_empty() {
-                            return Err(KexError::Server("view has no terminals".into()));
+                            return Err(KexshError::Server("view has no terminals".into()));
                         }
                         let label = terminal_ids[0].clone();
-                        kex::terminal::attach::attach_view(
+                        kexsh::terminal::attach::attach_view(
                             &label,
                             &terminal_ids[1..],
                             Some(&id),
@@ -343,7 +343,7 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                         )
                         .await
                     }
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }
@@ -357,25 +357,25 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                     .await?
                 {
                     Response::Ok => Ok(()),
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }
         },
         Command::Config { action } => match action {
             ConfigAction::Show => {
-                let cfg = kex::config::Config::load().unwrap_or_default();
+                let cfg = kexsh::config::Config::load().unwrap_or_default();
                 println!("prefix = \"{}\"", cfg.prefix.to_config_string());
                 println!("status_bar = {}", cfg.status_bar);
                 Ok(())
             }
             ConfigAction::Path => {
-                println!("{}", kex::config::config_path().display());
+                println!("{}", kexsh::config::config_path().display());
                 Ok(())
             }
         },
-        Command::Login { server } => kex::cloud::login::login(&server).await,
-        Command::Logout => kex::cloud::login::logout().await,
+        Command::Login { server } => kexsh::cloud::login::login(&server).await,
+        Command::Logout => kexsh::cloud::login::logout().await,
         Command::Proxy { action } => match action {
             ProxyAction::Create { port, public } => {
                 let mut client = IpcClient::connect().await?;
@@ -384,7 +384,7 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                         println!("port {port} exposed: {url}");
                         Ok(())
                     }
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }
@@ -395,7 +395,7 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                         println!("port {port} unexposed");
                         Ok(())
                     }
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }
@@ -419,7 +419,7 @@ async fn run(cli: Cli) -> kex::error::Result<()> {
                         }
                         Ok(())
                     }
-                    Response::Error { message } => Err(KexError::Server(message)),
+                    Response::Error { message } => Err(KexshError::Server(message)),
                     _ => Ok(()),
                 }
             }

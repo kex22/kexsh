@@ -5,7 +5,7 @@ use tokio::sync::mpsc;
 
 use crate::contract;
 use crate::support::load_scenario;
-use kex::cloud::manager::{ProxyEvent, proxy_request_task};
+use kexsh::cloud::manager::{ProxyEvent, proxy_request_task};
 
 #[tokio::test]
 async fn contract_proxy_http_happy_path() {
